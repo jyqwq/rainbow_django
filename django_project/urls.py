@@ -22,9 +22,9 @@ urlpatterns = [
     # path('admin/', admin.site.urls),
     url(r'^$', views.index, name='index'),
     # 子路由
-    path('user/', include('user.urls'),namespace='user_module'),
-    path('sharing/', include('sharing.urls'),namespace='sharing_module'),
-    path('search/', include('search.urls'),namespace='search_module'),
+    url(r'user/', include('user.urls')),
+    url(r'sharing/', include('sharing.urls')),
+    url(r'search/', include('search.urls')),
 
 
 ]

@@ -73,3 +73,190 @@
             # 热门妆品排行 hotCosmetics get请求
             # 热搜关键字 增查 hotKey post请求
             # 单个产品 oneProduct get请求
+
+数据库对照表
+
+    user模块
+
+        user 用户表
+            telephone
+            password
+            register_time
+
+        sex 性别表
+            sex
+
+        icon 头像表
+            icon_url
+
+        skin 肤质表
+            skin
+
+        followers 关注表
+            follower
+            concern
+            date
+
+        userInfo 用户信息表
+            user
+            name
+            autograph
+            birth
+            sex
+            icon
+            skin
+            fans
+            follow
+            fbs
+            cols
+            com
+
+    sharing模块
+
+        dynamic 心情表
+            user
+            content
+            tags
+            date
+            click
+            fbs
+            cols
+            com
+
+        dairy 日记表
+            user
+            title
+            content
+            tags
+            date
+            click
+            fbs
+            cols
+            com
+
+        test 测评表
+            user
+            title
+            content
+            tags
+            date
+            click
+            fbs
+            cols
+            com
+
+        testSubtitle 测评附表
+            main
+            title
+            content
+
+        dynamicImg 心情图片表
+            url
+            dynamic
+            size
+
+        dairyImg 日记图片表
+            url
+            dairy
+            size
+
+        testImg 测评图片表
+            url
+            test
+            size
+
+        dynamicFbs 心情点赞表
+            user
+            dynamic
+            date
+
+        dairyFbs 日记点赞表
+            user
+            dairy
+            date
+
+        testFbs 测评点赞表
+            user
+            test
+            date
+
+        dynamicCol 心情收藏表
+            user
+            dynamic
+            date
+
+        dairyCol 日记收藏表
+            user
+            dairy
+            date
+
+        testCol 测评收藏表
+            user
+            test
+            date
+
+        dynamicCom 心情评论表
+            user
+            dynamic
+            content
+            date
+
+        dairyCom 日记评论表
+            user
+            dairy
+            content
+            date
+
+        testCom 测评评论表
+            user
+            test
+            content
+            date
+
+    search模块
+        
+        Category 品种表
+            Category
+            
+        Commodity 产品表
+            name
+            price
+            brand
+            component
+            Effect
+            adaptability
+            category
+            capacity
+            security
+            overdue
+            date
+            click
+            fbs
+            cols
+            com
+            
+        CommodityImg 产品图片表
+            url
+            commodity
+            size
+            
+        CommodityFbs 产品点赞表
+            user
+            commodity
+            date
+            
+        CommodityCol 产品收藏表
+            user
+            commodity
+            date
+            
+        CommodityCom 产品评论表
+            user
+            commodity
+            content
+            date
+            
+        SearchKey 搜索关键字表
+            user
+            content
+            date

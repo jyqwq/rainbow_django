@@ -27,8 +27,8 @@ class Skin(models.Model):
 
 # 关注表
 class Followers(models.Model):
-    follower = models.ForeignKey(to='User', to_field='id', on_delete=models.CASCADE, default=1)
-    concern = models.ForeignKey(to='User', to_field='id', on_delete=models.CASCADE, default=1)
+    follower = models.ForeignKey(to='User', to_field='id', on_delete=models.CASCADE, default=1, related_name='follower')
+    concern = models.ForeignKey(to='User', to_field='id', on_delete=models.CASCADE, default=1, related_name='concern')
     date = models.CharField(max_length=255)
 
 
