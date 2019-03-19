@@ -1,3 +1,11 @@
+隔离环境
+    
+    更改环境时运行
+    生成requirement文件：pip freeze > requirements.txt
+    
+    生成环境时运行
+    根据requirement文件安装依赖库：pip install -r requirement.txt
+
 服务器状态码
 
     codes=[
@@ -26,6 +34,7 @@
         {"status_code":"10020","status_text":"未赞"},
         {"status_code":"10021","status_text":"评论成功"},
         {"status_code":"10022","status_text":"不能关注自己"},
+        {"status_code":"40000","status_text":"请求方法不合法"}
     ]
 
 路由接口传值表
@@ -42,16 +51,37 @@
 
         user
             # 用户主页 index
-            # 登录 login post请求
-            # 注册 register post请求
-            # 个人信息增删改查 personInfo post请求
-            # 我的个人动态 myDynamics post请求
-            # 我的关注动态 trendsConcern post请求
-            # 单个动态 oneDynamic get请求
-            # 评论增删改查 viewComment get请求
-            # 点赞增删改查 viewCompliment get请求
-            # 收藏增删改查 viewCollections get请求
-            # 关注增删改查 viewConcern get请求
+            # 登录 login post请求  
+                {"telephone":*,"password":*}
+            # 注册 register post请求 
+                {"telephone":*,"password":*,"name":*,"register_time":*}
+            # 修改手机号 newTel post请求
+            # 修改密码 newPassword post请求
+            # 个人信息改查 personInfo post请求 
+                查 {"user_id":*,"method":"check"} 
+                改 {"user_id":*,"method":"update","name|autograph|birth":*}
+            # 我的个人动态 myDynamics get请求 
+                user_id/page/
+            # 我的关注动态 trendsConcern get请求  
+                user_id/page/
+            # 单个动态 oneDynamic get请求 
+                (dynamic|dairy|test)/id/
+            # 评论增删查 viewComment post请求
+                增 {"method":"add","type":"dynamic|dairy|test|commodity","id":*,"user_id":*,"content":*,"date":*} //id为动态或者产品id
+                删 {"method":"del","type":"dynamic|dairy|test|commodity","id":*} //id为评论表id
+                查 {"method":"check","target":[{"type":"dynamic|dairy|test|commodity","id":*},{...}]} //id为动态或者产品id
+            # 点赞增删改查 viewCompliment post请求
+                增 {"method":"add","type":"dynamic|dairy|test|commodity","id":*,"user_id":*,"date":*} //id为动态或者产品id
+                删 {"method":"del","type":"dynamic|dairy|test|commodity","id":*,"user_id":*} //id为动态或者产品id
+                查 {"method":"check","target":[{"type":"dynamic|dairy|test|commodity","id":*,"user_id":*},{...}]} //id为动态或者产品id (只给id 只给user_id 都给)
+            # 收藏增删改查 viewCollections post请求
+                增 {"method":"add","type":"dynamic|dairy|test|commodity","id":*,"user_id":*,"date":*} //id为动态或者产品id
+                删 {"method":"del","type":"dynamic|dairy|test|commodity","id":*,"user_id":*} //id为动态或者产品id
+                查 {"method":"check","target":[{"type":"dynamic|dairy|test|commodity","id":*,"user_id":*},{...}]} //id为动态或者产品id (只给id 只给user_id 都给)
+            # 关注增删改查 viewConcern post请求
+                增 {"method":"add","concern_id":*,"follower_id":*,"date":*}
+                删 {"method":"del","concern_id":*,"follower_id":*}
+                查 {"method":"check","concern_id":*,"follower_id":*}
 
         sharing
             # 分享主页 index

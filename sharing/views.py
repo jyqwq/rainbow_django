@@ -13,4 +13,11 @@ def index(request):
 def releaseSharing(request):
     if request.method == "POST":
         obtain = json.loads(request.body)
-        pass
+        try:
+            pass
+        except Exception as ex:
+            print('分享发布错误')
+            print(ex)
+            return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
+    else:
+        return JsonResponse({"status_code": "40000", "status_text": "请求方法不合法"})
