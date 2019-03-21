@@ -5,6 +5,7 @@ class RequestAuth(MiddlewareMixin):
         # print(request.GET.get('id'))
 
         # print('请求地址')
+        print(request.environ.get('REMOTE_ADDR'))
         print(request.environ.get('PATH_INFO'))
         # print('111')
         # return HttpResponse('sorry')

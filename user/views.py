@@ -91,7 +91,6 @@ def personInfo(request):
             try:
                 if user['method'] == 'check':
                     uu = model_to_dict(models.UserInfo.objects.get(user_id=user['user_id']))
-                    print(uu)
                     return JsonResponse(uu)
                 elif user['method'] == 'update':
                     id = user['user_id']

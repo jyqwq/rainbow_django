@@ -21,21 +21,25 @@ from .import views
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     # 普通搜索
-    url(r'searchAll/', views.searchAll, name='searchAll'),
+    url(r'searchAll', views.searchAll, name='searchAll'),
     # 产品分类搜索
-    url(r'searchProduct/', views.searchProduct, name='searchProduct'),
+    url(r'searchProduct', views.searchProduct, name='searchProduct'),
     # 品牌分类搜索
-    url(r'searchBrand/', views.searchBrand, name='searchBrand'),
+    url(r'searchBrand', views.searchBrand, name='searchBrand'),
+    # 成分分类搜索
+    url(r'searchComponent', views.searchComponent, name='searchComponent'),
+    # 效果分类搜索
+    url(r'searchEffect', views.searchEffect, name='searchEffect'),
     # 品种分类搜索
-    url(r'searchVarieties/', views.searchVarieties, name='searchVarieties'),
+    url(r'searchVarieties', views.searchVarieties, name='searchVarieties'),
     # 标签分类搜索
-    url(r'searchTags/', views.searchTags, name='searchTags'),
+    url(r'searchTags', views.searchTags, name='searchTags'),
     # 搜索心情
-    url(r'searchDynamic/', views.searchDynamic, name='searchDynamic'),
+    url(r'searchDynamic', views.searchDynamic, name='searchDynamic'),
     # 搜索日记
-    url(r'searchJournal/', views.searchJournal, name='searchJournal'),
+    url(r'searchJournal', views.searchJournal, name='searchJournal'),
     # 搜索测评
-    url(r'searchTest/', views.searchTest, name='searchTest'),
+    url(r'searchTest', views.searchTest, name='searchTest'),
     # 实时热搜排行
     url(r'hotSearch/', views.hotSearch, name='hotSearch'),
     # 热门日记排行

@@ -86,23 +86,45 @@
         sharing
             # 分享主页 index
             # 分享发布 releaseSharing post请求
+                心情 {"type":"dynamic|dairy|test","content":*,"tags":*,"date":*,"user_id":*}
+                日记 {"type":"dynamic|dairy|test","title":*,"content":*,"tags":*,"date":*,"user_id":*}
+                测评 {"type":"dynamic|dairy|test","title":*,"content":*,"tags":*,"date":*,"user_id":*,"subtitle":[{"title":*,"content":*},{"title":*,"content":*}]}
 
         search
             # 搜索主页 index
             # 普通搜索 searchAll get请求
+                ?key=*&page=*
             # 产品分类搜索 searchProduct get请求
+                ?key=*&page=*
             # 品牌分类搜索 searchBrand get请求
+                ?key=*&page=*
+            # 成分分类搜索 searchComponent get请求
+                ?key=*&page=*
+            # 效果分类搜索 searchEffect get请求
+                ?key=*&page=*
             # 品种分类搜索 searchVarieties get请求
+                ?key=*&page=*
             # 标签分类搜索 searchTags get请求
+                ?key=*&page=*
             # 搜索心情 searchDynamic get请求
+                ?key=*&page=*
             # 搜索日记 searchJournal get请求
+                ?key=*&page=*
             # 搜索测评 searchTest get请求
+                ?key=*&page=*
             # 实时热搜排行 hotSearch get请求
+                ?page=*
             # 热门日记排行 hotDairy get请求
+                ?page=*
             # 热门测评排行 hotTest get请求
+                ?page=*
             # 热门妆品排行 hotCosmetics get请求
+                ?page=*
             # 热搜关键字 增查 hotKey post请求
+                增 {"method":"add","content":*,"date":*,"user_id":*}
+                查 {"method":"check"}
             # 单个产品 oneProduct get请求
+                ?id=*
 
 数据库对照表
 
@@ -251,12 +273,12 @@
         Commodity 产品表
             name
             price
-            brand
-            component
-            Effect
-            adaptability
-            category
-            capacity
+            brand 品牌
+            component 成分
+            Effect 效果
+            adaptability 皮肤适性 MM
+            category 种类 F
+            capacity 容量
             security
             overdue
             date
