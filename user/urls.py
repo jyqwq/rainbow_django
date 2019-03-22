@@ -40,6 +40,8 @@ urlpatterns = [
     url(r'viewCollections/', views.viewCollections, name='viewCollections'),
     # 关注增删改查
     url(r'viewConcern/', views.viewConcern, name='viewConcern'),
+    # 七牛云token
+    url(r'qiniuToken/', views.qiniuToken, name='qiniuToken'),
 
 
 

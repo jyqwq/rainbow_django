@@ -34,7 +34,8 @@
         {"status_code":"10020","status_text":"未赞"},
         {"status_code":"10021","status_text":"评论成功"},
         {"status_code":"10022","status_text":"不能关注自己"},
-        {"status_code":"40000","status_text":"请求方法不合法"}
+        {"status_code":"40000","status_text":"请求方法不合法"},
+        {"status_code":"20000","status_text":"请求成功"},
     ]
 
 路由接口传值表
@@ -82,6 +83,10 @@
                 增 {"method":"add","concern_id":*,"follower_id":*,"date":*}
                 删 {"method":"del","concern_id":*,"follower_id":*}
                 查 {"method":"check","concern_id":*,"follower_id":*}
+            # 七牛云token qiniuToken post请求
+                上传头像 {"method":"icon","iconname":*}
+                分享图片 {"method":"sharing","name":[*,*,*]}
+            # 保存图片
 
         sharing
             # 分享主页 index

@@ -8,6 +8,8 @@ from utils.user_func import *
 from django.forms.models import model_to_dict
 import itertools
 import operator
+import uuid
+
 
 # Create your views here.
 
@@ -23,17 +25,37 @@ def login(request):
         if user.get('telephone') and user.get('password'):
             res = online(user)
             if res['status_code'] == '10003':
-                token = createToken(user['telephone'],res['id'])
-                resp = JsonResponse(data=json.dumps({"status_code": "10003", "status_text": "登录成功","userInfo":res['userInfo']}), safe=False)
+                token = createToken(user['telephone'], res['id'])
+                resp = JsonResponse(data=json.dumps({"status_code": "10003", "status_text": "登录成功", "userInfo": res['userInfo']}),safe=False)
                 resp['token'] = token
                 resp["Access-Control-Expose-Headers"] = "token"
                 return resp
             else:
-                return JsonResponse(res)
+                resp = JsonResponse(data=json.dumps({"status_code": res['status_code'], "status_text": res['status_text']}),safe=False)
+                resp['token'] = None
+                resp["Access-Control-Expose-Headers"] = "token"
+                return resp
+        elif user.get('token'):
+            data = checkToken(user['token'])
+            if data:
+                uu = model_to_dict(models.UserInfo.objects.get(user_id=data['user_id']))
+                resp = JsonResponse(
+                    data=json.dumps({"status_code": "10003", "status_text": "登录成功", "userInfo": uu}),
+                    safe=False)
+                resp['token'] = None
+                resp["Access-Control-Expose-Headers"] = "token"
+                return resp
+            else:
+                resp = JsonResponse(
+                    data=json.dumps({"status_code": "10006", "status_text": "登录过期"}),
+                    safe=False)
+                resp['token'] = None
+                resp["Access-Control-Expose-Headers"] = "token"
+                return resp
         else:
-            return JsonResponse({"status_code":"40005","status_text":"数据格式不合法"})
+            return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
     else:
-        return JsonResponse({"status_code":"40000","status_text":"请求方法不合法"})
+        return JsonResponse({"status_code": "40000", "status_text": "请求方法不合法"})
 
 
 # 注册
@@ -43,15 +65,18 @@ def register(request):
         if user.get('telephone') and user.get('password') and user.get('name') and user.get('register_time'):
             res = newPerson(user)
             if res.id:
-                resp = JsonResponse(data=json.dumps({"status_code":"10001","status_text":"注册成功"}),safe=False)
+                resp = JsonResponse(data=json.dumps({"status_code": "10001", "status_text": "注册成功"}), safe=False)
                 token = createToken(user['telephone'], res.id)
                 resp['token'] = token
                 resp["Access-Control-Expose-Headers"] = "token"
                 return resp
             else:
-                return JsonResponse(res)
+                resp = JsonResponse(data=json.dumps({"status_code": res['status_code'], "status_text": res['status_text']}), safe=False)
+                resp['token'] = None
+                resp["Access-Control-Expose-Headers"] = "token"
+                return resp
         else:
-            return JsonResponse({"status_code":"40005","status_text":"数据格式不合法"})
+            return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
     else:
         return JsonResponse({"status_code": "40000", "status_text": "请求方法不合法"})
 
@@ -82,7 +107,6 @@ def newPassword(request):
         return JsonResponse({"status_code": "40000", "status_text": "请求方法不合法"})
 
 
-
 # 个人信息改查
 def personInfo(request):
     if request.method == "POST":
@@ -98,15 +122,15 @@ def personInfo(request):
                     del user['user_id']
                     uu = models.UserInfo.objects.filter(user_id=id).update(**user)
                     if uu == 1:
-                        return JsonResponse({"status_code":"10014","status_text":"更新成功"})
+                        return JsonResponse({"status_code": "10014", "status_text": "更新成功"})
                     else:
-                        return JsonResponse({"status_code":"40004","status_text":"系统错误"})
+                        return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
                 else:
-                    return JsonResponse({"status_code":"40005","status_text":"数据格式不合法"})
+                    return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
             except Exception as ex:
                 print('个人信息改查错误')
                 print(ex)
-                return JsonResponse({"status_code":"40004","status_text":"系统错误"})
+                return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
         else:
             return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
     else:
@@ -194,6 +218,7 @@ def oneDynamic(request, type, id):
     else:
         return JsonResponse({"status_code": "40000", "status_text": "请求方法不合法"})
 
+
 # 评论增删查
 def viewComment(request):
     if request.method == "POST":
@@ -202,7 +227,8 @@ def viewComment(request):
             if obtain.get('method'):
                 # 添加评论
                 if obtain['method'] == 'add':
-                    if obtain.get('content') and obtain.get('type') and obtain.get('id') and obtain.get('user_id') and obtain.get('date'):
+                    if obtain.get('content') and obtain.get('type') and obtain.get('id') and obtain.get(
+                            'user_id') and obtain.get('date'):
                         if obtain['type'] == 'dynamic':
                             obtain['Dynamic_id'] = obtain['id']
                             del obtain['id']
@@ -247,7 +273,7 @@ def viewComment(request):
                         else:
                             return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                         if res[0] == 1:
-                            return JsonResponse({"status_code":"10010","status_text":"删除成功"})
+                            return JsonResponse({"status_code": "10010", "status_text": "删除成功"})
                         else:
                             return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
                 # 查看评论
@@ -260,28 +286,32 @@ def viewComment(request):
                                     if i['type'] == 'dynamic':
                                         com = list(smodels.DynamicCom.objects.filter(Dynamic_id=i['id']).values())
                                         for c in com:
-                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name','icon_id').first()
+                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name',
+                                                                                                            'icon_id').first()
                                             ui = models.Icon.objects.filter(id=u['icon_id']).values('icon_url').first()
                                             c['userInfo'] = {'name': u['name'], 'icon': ui['icon_url']}
                                             resp.append(c)
                                     elif i['type'] == 'dairy':
                                         com = list(smodels.DairyCom.objects.filter(Dairy_id=i['id']).values())
                                         for c in com:
-                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name', 'icon_id').first()
+                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name',
+                                                                                                            'icon_id').first()
                                             ui = models.Icon.objects.filter(id=u['icon_id']).values('icon_url').first()
                                             c['userInfo'] = {'name': u['name'], 'icon': ui['icon_url']}
                                             resp.append(c)
                                     elif i['type'] == 'test':
                                         com = smodels.TestCom.objects.filter(Test_id=i['id']).values()
                                         for c in com:
-                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name', 'icon_id').first()
+                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name',
+                                                                                                            'icon_id').first()
                                             ui = models.Icon.objects.filter(id=u['icon_id']).values('icon_url').first()
                                             c['userInfo'] = {'name': u['name'], 'icon': ui['icon_url']}
                                             resp.append(c)
                                     elif i['type'] == 'commodity':
                                         com = list(semodels.CommodityCom.objects.filter(commodity_id=i['id']).values())
                                         for c in com:
-                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name','icon_id').first()
+                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name',
+                                                                                                            'icon_id').first()
                                             ui = models.Icon.objects.filter(id=u['icon_id']).values('icon_url').first()
                                             c['userInfo'] = {'name': u['name'], 'icon': ui['icon_url']}
                                             resp.append(c)
@@ -289,7 +319,7 @@ def viewComment(request):
                                         return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                                 else:
                                     return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
-                            return JsonResponse(resp,safe=False)
+                            return JsonResponse(resp, safe=False)
                         else:
                             return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                     else:
@@ -304,6 +334,7 @@ def viewComment(request):
             return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
     else:
         return JsonResponse({"status_code": "40000", "status_text": "请求方法不合法"})
+
 
 # 点赞增删改查
 def viewCompliment(request):
@@ -341,24 +372,28 @@ def viewCompliment(request):
                         else:
                             return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                         if res.id:
-                            return JsonResponse({"status_code":"10018","status_text":"赞成功"})
+                            return JsonResponse({"status_code": "10018", "status_text": "赞成功"})
                         else:
                             return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
                 # 删除点赞
                 elif obtain['method'] == 'del':
                     if obtain.get('type') and obtain.get('id') and obtain.get('user_id'):
                         if obtain['type'] == 'dynamic':
-                            res = smodels.DynamicFbs.objects.filter(Dynamic_id=obtain['id'], user_id=obtain['user_id']).delete()
+                            res = smodels.DynamicFbs.objects.filter(Dynamic_id=obtain['id'],
+                                                                    user_id=obtain['user_id']).delete()
                         elif obtain['type'] == 'dairy':
-                            res = smodels.DairyFbs.objects.filter(Dairy_id=obtain['id'], user_id=obtain['user_id']).delete()
+                            res = smodels.DairyFbs.objects.filter(Dairy_id=obtain['id'],
+                                                                  user_id=obtain['user_id']).delete()
                         elif obtain['type'] == 'test':
-                            res = smodels.TestFbs.objects.filter(Test_id=obtain['id'], user_id=obtain['user_id']).delete()
+                            res = smodels.TestFbs.objects.filter(Test_id=obtain['id'],
+                                                                 user_id=obtain['user_id']).delete()
                         elif obtain['type'] == 'commodity':
-                            res = semodels.CommodityFbs.objects.filter(commodity_id=obtain['id'], user_id=obtain['user_id']).delete()
+                            res = semodels.CommodityFbs.objects.filter(commodity_id=obtain['id'],
+                                                                       user_id=obtain['user_id']).delete()
                         else:
                             return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                         if res[0] == 1:
-                            return JsonResponse({"status_code":"10010","status_text":"删除成功"})
+                            return JsonResponse({"status_code": "10010", "status_text": "删除成功"})
                         else:
                             return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
                 # 查看点赞
@@ -375,7 +410,8 @@ def viewCompliment(request):
                                         del i['type']
                                         com = list(smodels.DynamicFbs.objects.filter(**i).values())
                                         for c in com:
-                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name', 'icon_id').first()
+                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name',
+                                                                                                            'icon_id').first()
                                             ui = models.Icon.objects.filter(id=u['icon_id']).values('icon_url').first()
                                             c['userInfo'] = {'name': u['name'], 'icon': ui['icon_url']}
                                             resp.append(c)
@@ -386,7 +422,8 @@ def viewCompliment(request):
                                         del i['type']
                                         com = list(smodels.DairyFbs.objects.filter(**i).values())
                                         for c in com:
-                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name', 'icon_id').first()
+                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name',
+                                                                                                            'icon_id').first()
                                             ui = models.Icon.objects.filter(id=u['icon_id']).values('icon_url').first()
                                             c['userInfo'] = {'name': u['name'], 'icon': ui['icon_url']}
                                             resp.append(c)
@@ -397,7 +434,8 @@ def viewCompliment(request):
                                         del i['type']
                                         com = smodels.TestFbs.objects.filter(**i).values()
                                         for c in com:
-                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name', 'icon_id').first()
+                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name',
+                                                                                                            'icon_id').first()
                                             ui = models.Icon.objects.filter(id=u['icon_id']).values('icon_url').first()
                                             c['userInfo'] = {'name': u['name'], 'icon': ui['icon_url']}
                                             resp.append(c)
@@ -408,7 +446,8 @@ def viewCompliment(request):
                                         del i['type']
                                         com = list(semodels.CommodityFbs.objects.filter(**i).values())
                                         for c in com:
-                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name','icon_id').first()
+                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name',
+                                                                                                            'icon_id').first()
                                             ui = models.Icon.objects.filter(id=u['icon_id']).values('icon_url').first()
                                             c['userInfo'] = {'name': u['name'], 'icon': ui['icon_url']}
                                             resp.append(c)
@@ -417,8 +456,8 @@ def viewCompliment(request):
                                 else:
                                     return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                             if not resp:
-                                return JsonResponse({"status_code":"10020","status_text":"未赞"})
-                            return JsonResponse(resp,safe=False)
+                                return JsonResponse({"status_code": "10020", "status_text": "未赞"})
+                            return JsonResponse(resp, safe=False)
                         else:
                             return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                     else:
@@ -433,6 +472,7 @@ def viewCompliment(request):
             return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
     else:
         return JsonResponse({"status_code": "40000", "status_text": "请求方法不合法"})
+
 
 # 收藏增删改查
 def viewCollections(request):
@@ -470,24 +510,28 @@ def viewCollections(request):
                         else:
                             return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                         if res.id:
-                            return JsonResponse({"status_code":"10015","status_text":"收藏成功"})
+                            return JsonResponse({"status_code": "10015", "status_text": "收藏成功"})
                         else:
                             return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
                 # 删除收藏
                 elif obtain['method'] == 'del':
                     if obtain.get('type') and obtain.get('id') and obtain.get('user_id'):
                         if obtain['type'] == 'dynamic':
-                            res = smodels.DynamicCol.objects.filter(Dynamic_id=obtain['id'], user_id=obtain['user_id']).delete()
+                            res = smodels.DynamicCol.objects.filter(Dynamic_id=obtain['id'],
+                                                                    user_id=obtain['user_id']).delete()
                         elif obtain['type'] == 'dairy':
-                            res = smodels.DairyCol.objects.filter(Dairy_id=obtain['id'], user_id=obtain['user_id']).delete()
+                            res = smodels.DairyCol.objects.filter(Dairy_id=obtain['id'],
+                                                                  user_id=obtain['user_id']).delete()
                         elif obtain['type'] == 'test':
-                            res = smodels.TestCol.objects.filter(Test_id=obtain['id'], user_id=obtain['user_id']).delete()
+                            res = smodels.TestCol.objects.filter(Test_id=obtain['id'],
+                                                                 user_id=obtain['user_id']).delete()
                         elif obtain['type'] == 'commodity':
-                            res = semodels.CommodityCol.objects.filter(commodity_id=obtain['id'], user_id=obtain['user_id']).delete()
+                            res = semodels.CommodityCol.objects.filter(commodity_id=obtain['id'],
+                                                                       user_id=obtain['user_id']).delete()
                         else:
                             return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                         if res[0] == 1:
-                            return JsonResponse({"status_code":"10010","status_text":"删除成功"})
+                            return JsonResponse({"status_code": "10010", "status_text": "删除成功"})
                         else:
                             return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
                 # 查看收藏
@@ -504,8 +548,11 @@ def viewCollections(request):
                                         del i['type']
                                         com = list(smodels.DynamicCol.objects.filter(**i).values())
                                         for c in com:
-                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name', 'icon_id').first()
+                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name',
+                                                                                                            'icon_id').first()
                                             ui = models.Icon.objects.filter(id=u['icon_id']).values('icon_url').first()
+                                            info = smodels.Dynamic.objects.filter(id=c['Dynamic_id']).values().first()
+                                            c['colInfo'] = info
                                             c['userInfo'] = {'name': u['name'], 'icon': ui['icon_url']}
                                             resp.append(c)
                                     elif i['type'] == 'dairy':
@@ -515,8 +562,11 @@ def viewCollections(request):
                                         del i['type']
                                         com = list(smodels.DairyCol.objects.filter(**i).values())
                                         for c in com:
-                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name', 'icon_id').first()
+                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name',
+                                                                                                            'icon_id').first()
                                             ui = models.Icon.objects.filter(id=u['icon_id']).values('icon_url').first()
+                                            info = smodels.Dairy.objects.filter(id=c['Dairy_id']).values().first()
+                                            c['colInfo'] = info
                                             c['userInfo'] = {'name': u['name'], 'icon': ui['icon_url']}
                                             resp.append(c)
                                     elif i['type'] == 'test':
@@ -526,8 +576,11 @@ def viewCollections(request):
                                         del i['type']
                                         com = smodels.TestCol.objects.filter(**i).values()
                                         for c in com:
-                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name', 'icon_id').first()
+                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name',
+                                                                                                            'icon_id').first()
                                             ui = models.Icon.objects.filter(id=u['icon_id']).values('icon_url').first()
+                                            info = smodels.Test.objects.filter(id=c['Test_id']).values().first()
+                                            c['colInfo'] = info
                                             c['userInfo'] = {'name': u['name'], 'icon': ui['icon_url']}
                                             resp.append(c)
                                     elif i['type'] == 'commodity':
@@ -537,17 +590,21 @@ def viewCollections(request):
                                         del i['type']
                                         com = list(semodels.CommodityCol.objects.filter(**i).values())
                                         for c in com:
-                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name','icon_id').first()
+                                            u = models.UserInfo.objects.filter(user_id=c['user_id']).values('name',
+                                                                                                            'icon_id').first()
                                             ui = models.Icon.objects.filter(id=u['icon_id']).values('icon_url').first()
+                                            info = semodels.Commodity.objects.filter(
+                                                id=c['commodity_id']).values().first()
                                             c['userInfo'] = {'name': u['name'], 'icon': ui['icon_url']}
+                                            c['colInfo'] = info
                                             resp.append(c)
                                     else:
                                         return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                                 else:
                                     return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                             if not resp:
-                                return JsonResponse({"status_code":"10020","status_text":"未赞"})
-                            return JsonResponse(resp,safe=False)
+                                return JsonResponse({"status_code": "10017", "status_text": "未收藏"})
+                            return JsonResponse(resp, safe=False)
                         else:
                             return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                     else:
@@ -563,6 +620,7 @@ def viewCollections(request):
     else:
         return JsonResponse({"status_code": "40000", "status_text": "请求方法不合法"})
 
+
 # 关注增删改查
 def viewConcern(request):
     if request.method == "POST":
@@ -575,7 +633,7 @@ def viewConcern(request):
                         del obtain['method']
                         res = models.Followers.objects.create(**obtain)
                         if res.id:
-                            return JsonResponse({"status_code":"10009","status_text":"关注成功"})
+                            return JsonResponse({"status_code": "10009", "status_text": "关注成功"})
                         else:
                             return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
                     else:
@@ -586,7 +644,7 @@ def viewConcern(request):
                         del obtain['method']
                         res = models.Followers.objects.filter(**obtain).delete()
                         if res.id:
-                            return JsonResponse({"status_code":"10010","status_text":"删除成功"})
+                            return JsonResponse({"status_code": "10010", "status_text": "删除成功"})
                         else:
                             return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
                     else:
@@ -598,14 +656,16 @@ def viewConcern(request):
                         del obtain['method']
                         res = list(models.Followers.objects.filter(**obtain).values())
                         for c in res:
-                            concern = models.UserInfo.objects.filter(user_id=c['concern_id']).values('name', 'icon_id').first()
+                            concern = models.UserInfo.objects.filter(user_id=c['concern_id']).values('name',
+                                                                                                     'icon_id').first()
                             concern_i = models.Icon.objects.filter(id=concern['icon_id']).values('icon_url').first()
-                            follower = models.UserInfo.objects.filter(user_id=c['follower_id']).values('name', 'icon_id').first()
+                            follower = models.UserInfo.objects.filter(user_id=c['follower_id']).values('name',
+                                                                                                       'icon_id').first()
                             follower_i = models.Icon.objects.filter(id=concern['icon_id']).values('icon_url').first()
                             c['concernInfo'] = {'name': concern['name'], 'icon': concern_i['icon_url']}
                             c['followerInfo'] = {'name': follower['name'], 'icon': follower_i['icon_url']}
                             resp.append(c)
-                        return JsonResponse(resp,safe=False)
+                        return JsonResponse(resp, safe=False)
                     else:
                         return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                 else:
@@ -619,3 +679,47 @@ def viewConcern(request):
     else:
         return JsonResponse({"status_code": "40000", "status_text": "请求方法不合法"})
 
+
+# 七牛云token
+def qiniuToken(request):
+    from qiniu import Auth
+    if request.method == 'POST':
+        obtain = json.loads(request.body)
+        try:
+            if obtain.get('method'):
+                # 需要填写你的 Access Key 和 Secret Key
+                access_key = 'vp2ePBMNY-lgx6B6Rfh34jUoyjGwz8tJjvqdNlOC'
+                secret_key = 'mHtY1slsiozUJ_QUif9qC1QxR9mqqxguu10sOJFf'
+                # 构建鉴权对象
+                q = Auth(access_key, secret_key)
+                # 要上传的空间
+                bucket_name = 'rainbow'
+                domain = 'http://por6yfn25.bkt.clouddn.com'
+                # 上传头像
+                if obtain['method'] == 'icon' and obtain.get('iconname'):
+                    # 上传到七牛后保存的文件名
+                    filename = str(uuid.uuid4()) + '.' + obtain['iconname'].split('.')[1]
+                    # 生成上传 Token，可以指定过期时间等
+                    token = q.upload_token(bucket_name, filename, 3600)
+                    return JsonResponse({"status_code":"20000","status_text":"请求成功", "qiniu_token": token, "filename": filename, "domain": domain})
+                elif obtain['method'] == 'sharing' and obtain.get('name'):
+                    file = []
+                    for i in obtain['name']:
+                        filename = str(uuid.uuid4()) + '.' + i.split('.')[1]
+                        token = q.upload_token(bucket_name, filename, 3600)
+                        file.append({"filename":filename, "token":token})
+                    return JsonResponse(
+                        {"status_code": "20000", "status_text": "请求成功", "file":file,"domain": domain})
+                else:
+                    return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
+            else:
+                return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
+        except Exception as ex:
+            print('七牛云token错误')
+            print(ex)
+            return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
+    else:
+        return JsonResponse({"status_code": "40000", "status_text": "请求方法不合法"})
+
+
+# 保存图片
