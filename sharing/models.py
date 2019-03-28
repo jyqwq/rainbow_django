@@ -12,6 +12,7 @@ class Dynamic(models.Model):
     fbs = models.IntegerField(default=0)
     cols = models.IntegerField(default=0)
     com = models.IntegerField(default=0)
+    type = models.CharField(max_length=255,default='dynamic')
 
 
 # 日记表
@@ -25,6 +26,7 @@ class Dairy(models.Model):
     fbs = models.IntegerField(default=0)
     cols = models.IntegerField(default=0)
     com = models.IntegerField(default=0)
+    type = models.CharField(max_length=255,default='dairy')
 
 
 # 测评表
@@ -38,6 +40,7 @@ class Test(models.Model):
     fbs = models.IntegerField(default=0)
     cols = models.IntegerField(default=0)
     com = models.IntegerField(default=0)
+    type = models.CharField(max_length=255,default='test')
 
 
 # 测评附表

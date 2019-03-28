@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.forms.models import model_to_dict
 import itertools
 import operator
+from django.db.models import F
 
 
 # Create your views here.
@@ -26,6 +27,11 @@ def searchAll(request):
                 a = (page - 1) * 16
                 b = page * 16
                 res = list(models.Commodity.objects.filter(Q(name__icontains=key) | Q(brand__icontains=key) | Q(component__icontains=key) | Q(Effect__icontains=key)).values()[a:b])
+                id = list(models.Category.objects.filter(Category__contains=key).values())[0]
+                if id['id']:
+                    res1 = list(models.Commodity.objects.filter(category_id=id['id']).values()[a:b])
+                    for a in res1:
+                        res.append(a)
                 for c in res:
                     com = models.Commodity.objects.get(id=c['id'])
                     adaptability = list(com.adaptability.all().values())
@@ -35,6 +41,11 @@ def searchAll(request):
                     category = model_to_dict(models.Category.objects.get(id=c['category_id']))
                     c['category'] = category['Category']
                     c['adaptability'] = a
+                count = models.Commodity.objects.filter(
+                    Q(name__icontains=key) | Q(brand__icontains=key) | Q(component__icontains=key) | Q(
+                        Effect__icontains=key)).count()
+                n = {'count': int(count)}
+                res.append(n)
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -65,6 +76,10 @@ def searchProduct(request):
                     category = model_to_dict(models.Category.objects.get(id=c['category_id']))
                     c['category'] = category['Category']
                     c['adaptability'] = a
+                count = models.Commodity.objects.filter(
+                    name__icontains=key).count()
+                n = {'count': int(count)}
+                res.append(n)
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -95,6 +110,10 @@ def searchBrand(request):
                     category = model_to_dict(models.Category.objects.get(id=c['category_id']))
                     c['category'] = category['Category']
                     c['adaptability'] = a
+                count = models.Commodity.objects.filter(
+                    brand__icontains=key).count()
+                n = {'count':int(count)}
+                res.append(n)
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -116,6 +135,7 @@ def searchComponent(request):
                 a = (page - 1) * 16
                 b = page * 16
                 res = list(models.Commodity.objects.filter(component__icontains=key).values()[a:b])
+
                 for c in res:
                     com = models.Commodity.objects.get(id=c['id'])
                     adaptability = list(com.adaptability.all().values())
@@ -125,6 +145,10 @@ def searchComponent(request):
                     category = model_to_dict(models.Category.objects.get(id=c['category_id']))
                     c['category'] = category['Category']
                     c['adaptability'] = a
+                count = models.Commodity.objects.filter(
+                    component__icontains=key).count()
+                n = {'count': int(count)}
+                res.append(n)
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -155,6 +179,10 @@ def searchEffect(request):
                     category = model_to_dict(models.Category.objects.get(id=c['category_id']))
                     c['category'] = category['Category']
                     c['adaptability'] = a
+                count = models.Commodity.objects.filter(
+                    Effect__icontains=key).count()
+                n = {'count': int(count)}
+                res.append(n)
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -177,6 +205,7 @@ def searchVarieties(request):
                 b = page * 16
                 id = list(models.Category.objects.filter(Category__contains=key).values())[0]
                 res = list(models.Commodity.objects.filter(category_id=id['id']).values()[a:b])
+
                 for c in res:
                     com = models.Commodity.objects.get(id=c['id'])
                     adaptability = list(com.adaptability.all().values())
@@ -186,6 +215,10 @@ def searchVarieties(request):
                     category = model_to_dict(models.Category.objects.get(id=c['category_id']))
                     c['category'] = category['Category']
                     c['adaptability'] = a
+                count = models.Commodity.objects.filter(
+                    category_id=id['id']).count()
+                n = {'count': int(count)}
+                res.append(n)
                 return JsonResponse(res,safe=False)
             else:
                 return JsonResponse({"status_code":"40005","status_text":"数据格式不合法"})
@@ -282,7 +315,7 @@ def searchTest(request):
                     for t in test:
                         ts = list(smodels.TestSubtitle.objects.filter(main_id=t['id']).values())
                         t['subtitle'] = ts
-                        # 合并上面三个列表并按时间排序取前十个
+                # 合并上面三个列表并按时间排序取前十个
                 res = list(reversed(sorted(test, key=operator.itemgetter('date'))))[:10]
                 return JsonResponse(res, safe=False)
             else:
@@ -306,7 +339,10 @@ def hotSearch(request):
                 dairy = list(smodels.Dairy.objects.filter().order_by('click').values()[a:b])
                 dynamic = list(smodels.Dynamic.objects.filter().order_by('click').values()[a:b])
                 test = list(smodels.Test.objects.filter().order_by('click').values()[a:b])
-                res = list(reversed(sorted(list(itertools.chain(dairy, dynamic, test)), key=operator.itemgetter('date'))))[:10]
+                res = list(reversed(sorted(list(itertools.chain(dairy, dynamic, test)), key=operator.itemgetter('click'))))[:10]
+                for u in res:
+                    userInfo = model_to_dict(umodels.UserInfo.objects.get(user_id=u['user_id']))
+                    u['userInfo'] = userInfo
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -327,6 +363,9 @@ def hotDairy(request):
                 a = (page - 1) * 10
                 b = page * 10
                 res = list(smodels.Dairy.objects.filter().order_by('click').values()[a:b])
+                for u in res:
+                    userInfo = model_to_dict(umodels.UserInfo.objects.get(user_id=u['user_id']))
+                    u['userInfo'] = userInfo
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -347,6 +386,12 @@ def hotTest(request):
                 a = (page - 1) * 10
                 b = page * 10
                 res = list(smodels.Test.objects.filter().order_by('click').values()[a:b])
+                if res:
+                    for t in res:
+                        ts = list(smodels.TestSubtitle.objects.filter(main_id=t['id']).values())
+                        t['subtitle'] = ts
+                        userInfo = model_to_dict(umodels.UserInfo.objects.get(user_id=t['user_id']))
+                        t['userInfo'] = userInfo
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -413,8 +458,8 @@ def oneProduct(request):
     if request.method == "GET":
         try:
             id = request.GET.get('id')
-            print(id)
             res = models.Commodity.objects.filter(id=id).values().first()
+            models.Commodity.objects.filter(id=id).update(click=F('click')+1)
             com = models.Commodity.objects.get(id=res['id'])
             adaptability = list(com.adaptability.all().values())
             a = []

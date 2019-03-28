@@ -42,7 +42,7 @@ urlpatterns = [
     url(r'viewConcern/', views.viewConcern, name='viewConcern'),
     # 七牛云token
     url(r'qiniuToken/', views.qiniuToken, name='qiniuToken'),
-
-
+    # 保存图片
+    url(r'imgSave/', views.imgSave, name='imgSave'),
 
 ]

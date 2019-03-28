@@ -15,6 +15,7 @@ def releaseSharing(request):
         try:
             if obtain.get('type'):
                 res = None
+                print(obtain['type'])
                 if obtain['type'] == 'dynamic':
                     if obtain.get('content') and obtain.get('tags') and obtain.get('date') and obtain.get('user_id'):
                         del obtain['type']
@@ -29,6 +30,7 @@ def releaseSharing(request):
                         del obtain['subtitle']
                         del obtain['type']
                         res = models.Test.objects.create(**obtain)
+                        print(res)
                         for s in sub:
                             if s.get('title') and s.get('content'):
                                 s['main_id'] = res.id
@@ -42,7 +44,7 @@ def releaseSharing(request):
                 else:
                     return JsonResponse({"status_code":"40005","status_text":"数据格式不合法"})
                 if res.id:
-                    return JsonResponse({"status_code": "10008", "status_text": "发布成功"})
+                    return JsonResponse({"status_code": "10008", "status_text": "发布成功", "id": int(res.id)})
                 else:
                     return JsonResponse({"status_code":"40005","status_text":"数据格式不合法"})
         except Exception as ex:

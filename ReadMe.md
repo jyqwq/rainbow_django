@@ -36,6 +36,7 @@
         {"status_code":"10022","status_text":"不能关注自己"},
         {"status_code":"40000","status_text":"请求方法不合法"},
         {"status_code":"20000","status_text":"请求成功"},
+        {"status_code":"10023","status_text":"保存成功"},
     ]
 
 路由接口传值表
@@ -69,7 +70,7 @@
                 (dynamic|dairy|test)/id/
             # 评论增删查 viewComment post请求
                 增 {"method":"add","type":"dynamic|dairy|test|commodity","id":*,"user_id":*,"content":*,"date":*} //id为动态或者产品id
-                删 {"method":"del","type":"dynamic|dairy|test|commodity","id":*} //id为评论表id
+                删 {"method":"del","type":"dynamic|dairy|test|commodity","id":*,"user_id":*} //id为动态或者产品id
                 查 {"method":"check","target":[{"type":"dynamic|dairy|test|commodity","id":*},{...}]} //id为动态或者产品id
             # 点赞增删改查 viewCompliment post请求
                 增 {"method":"add","type":"dynamic|dairy|test|commodity","id":*,"user_id":*,"date":*} //id为动态或者产品id
@@ -86,14 +87,15 @@
             # 七牛云token qiniuToken post请求
                 上传头像 {"method":"icon","iconname":*}
                 分享图片 {"method":"sharing","name":[*,*,*]}
-            # 保存图片
+            # 保存图片 imgSave post请求
+                {"type":"dynamic|dairy|test|commodity","id":*,"url":*}
 
         sharing
             # 分享主页 index
             # 分享发布 releaseSharing post请求
-                心情 {"type":"dynamic|dairy|test","content":*,"tags":*,"date":*,"user_id":*}
-                日记 {"type":"dynamic|dairy|test","title":*,"content":*,"tags":*,"date":*,"user_id":*}
-                测评 {"type":"dynamic|dairy|test","title":*,"content":*,"tags":*,"date":*,"user_id":*,"subtitle":[{"title":*,"content":*},{"title":*,"content":*}]}
+                心情 {"type":"dynamic","content":*,"tags":*,"date":*,"user_id":*}
+                日记 {"type":"dairy","title":*,"content":*,"tags":*,"date":*,"user_id":*}
+                测评 {"type":"test","title":*,"content":*,"tags":*,"date":*,"user_id":*,"subtitle":[{"title":*,"content":*},{"title":*,"content":*}]}
 
         search
             # 搜索主页 index

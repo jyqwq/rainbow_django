@@ -41,15 +41,15 @@ urlpatterns = [
     # 搜索测评
     url(r'searchTest', views.searchTest, name='searchTest'),
     # 实时热搜排行
-    url(r'hotSearch/', views.hotSearch, name='hotSearch'),
+    url(r'hotSearch', views.hotSearch, name='hotSearch'),
     # 热门日记排行
-    url(r'hotDairy/', views.hotDairy, name='hotDairy'),
+    url(r'hotDairy', views.hotDairy, name='hotDairy'),
     # 热门测评排行
-    url(r'hotTest/', views.hotTest, name='hotTest'),
+    url(r'hotTest', views.hotTest, name='hotTest'),
     # 热门妆品排行
-    url(r'hotCosmetics/', views.hotCosmetics, name='hotCosmetics'),
+    url(r'hotCosmetics', views.hotCosmetics, name='hotCosmetics'),
     # 热搜关键字 增查
     url(r'hotKey/', views.hotKey, name='hotKey'),
     # 单个产品
-    url(r'oneProduct/', views.oneProduct, name='oneProduct'),
+    url(r'oneProduct', views.oneProduct, name='oneProduct'),
 ]
