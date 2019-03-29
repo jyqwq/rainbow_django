@@ -1,6 +1,8 @@
 from django.http import HttpResponse, JsonResponse
 import json
 from sharing import models
+from search import models as smodels
+from user import models as umodels
 
 # Create your views here.
 
@@ -12,10 +14,10 @@ def index(request):
 def releaseSharing(request):
     if request.method == "POST":
         obtain = json.loads(request.body)
+        print(obtain)
         try:
             if obtain.get('type'):
                 res = None
-                print(obtain['type'])
                 if obtain['type'] == 'dynamic':
                     if obtain.get('content') and obtain.get('tags') and obtain.get('date') and obtain.get('user_id'):
                         del obtain['type']
@@ -41,6 +43,18 @@ def releaseSharing(request):
                                     return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                             else:
                                 return JsonResponse({"status_code":"40005","status_text":"数据格式不合法"})
+                elif obtain['type'] == 'commodity':
+                    if obtain.get('name') and obtain.get('price') and obtain.get('brand') and obtain.get('component') and obtain.get('Effect') and obtain.get('capacity') and obtain.get('security') and obtain.get('overdue') and obtain.get('date') and obtain.get('category_id') and obtain.get('skin'):
+                        sk = obtain['skin']
+                        del obtain['skin']
+                        del obtain['type']
+                        res = smodels.Commodity.objects.create(**obtain)
+                        if res.id:
+                            com = smodels.Commodity.objects.get(id=int(res.id))
+                            for s in sk:
+                                com.adaptability.add(umodels.Skin.objects.get(id=s))
+                        else:
+                            return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
                 else:
                     return JsonResponse({"status_code":"40005","status_text":"数据格式不合法"})
                 if res.id:

@@ -787,14 +787,18 @@ def viewConcern(request):
                 # 添加关注
                 if obtain['method'] == 'add':
                     if obtain.get('concern_id') and obtain.get('follower_id') and obtain.get('date'):
-                        del obtain['method']
-                        res = models.Followers.objects.create(**obtain)
-                        if res.id:
-                            models.UserInfo.objects.filter(user_id=obtain['follower_id']).update(follow=F('follow') + 1)
-                            models.UserInfo.objects.filter(user_id=obtain['concern_id']).update(fans=F('fans') + 1)
-                            return JsonResponse({"status_code": "10009", "status_text": "关注成功"})
+                        if obtain['concern_id'] == obtain['follower_id']:
+                            return JsonResponse({"status_code":"10022","status_text":"不能关注自己"})
                         else:
-                            return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
+                            del obtain['method']
+                            res = models.Followers.objects.create(**obtain)
+                            if res.id:
+                                models.UserInfo.objects.filter(user_id=obtain['follower_id']).update(
+                                    follow=F('follow') + 1)
+                                models.UserInfo.objects.filter(user_id=obtain['concern_id']).update(fans=F('fans') + 1)
+                                return JsonResponse({"status_code": "10009", "status_text": "关注成功"})
+                            else:
+                                return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
                     else:
                         return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
                 # 删除关注

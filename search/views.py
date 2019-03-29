@@ -33,6 +33,8 @@ def searchAll(request):
                     for a in res1:
                         res.append(a)
                 for c in res:
+                    i = list(models.CommodityImg.objects.filter(commodity_id=c['id']).values('url'))
+                    c['imgs'] = i
                     com = models.Commodity.objects.get(id=c['id'])
                     adaptability = list(com.adaptability.all().values())
                     a = []
@@ -68,6 +70,8 @@ def searchProduct(request):
                 b = page * 16
                 res = list(models.Commodity.objects.filter(name__icontains=key).values()[a:b])
                 for c in res:
+                    i = list(models.CommodityImg.objects.filter(commodity_id=c['id']).values('url'))
+                    c['imgs'] = i
                     com = models.Commodity.objects.get(id=c['id'])
                     adaptability = list(com.adaptability.all().values())
                     a = []
@@ -102,6 +106,8 @@ def searchBrand(request):
                 b = page * 16
                 res = list(models.Commodity.objects.filter(brand__icontains=key).values()[a:b])
                 for c in res:
+                    i = list(models.CommodityImg.objects.filter(commodity_id=c['id']).values('url'))
+                    c['imgs'] = i
                     com = models.Commodity.objects.get(id=c['id'])
                     adaptability = list(com.adaptability.all().values())
                     a = []
@@ -137,6 +143,8 @@ def searchComponent(request):
                 res = list(models.Commodity.objects.filter(component__icontains=key).values()[a:b])
 
                 for c in res:
+                    i = list(models.CommodityImg.objects.filter(commodity_id=c['id']).values('url'))
+                    c['imgs'] = i
                     com = models.Commodity.objects.get(id=c['id'])
                     adaptability = list(com.adaptability.all().values())
                     a = []
@@ -171,6 +179,8 @@ def searchEffect(request):
                 b = page * 16
                 res = list(models.Commodity.objects.filter(Effect__icontains=key).values()[a:b])
                 for c in res:
+                    i = list(models.CommodityImg.objects.filter(commodity_id=c['id']).values('url'))
+                    c['imgs'] = i
                     com = models.Commodity.objects.get(id=c['id'])
                     adaptability = list(com.adaptability.all().values())
                     a = []
@@ -207,6 +217,8 @@ def searchVarieties(request):
                 res = list(models.Commodity.objects.filter(category_id=id['id']).values()[a:b])
 
                 for c in res:
+                    i = list(models.CommodityImg.objects.filter(commodity_id=c['id']).values('url'))
+                    c['imgs'] = i
                     com = models.Commodity.objects.get(id=c['id'])
                     adaptability = list(com.adaptability.all().values())
                     a = []
@@ -248,6 +260,18 @@ def searchTags(request):
                         t['subtitle'] = ts
                         # 合并上面三个列表并按时间排序取前十个
                 res = list(reversed(sorted(list(itertools.chain(dairy, dynamic, test)), key=operator.itemgetter('date'))))[:10]
+                for img in res:
+                    if img['type'] == 'dynamic':
+                        i = list(smodels.DynamicImg.objects.filter(dynamic_id=img['id']).values('url'))
+                        img['imgs'] = i
+                    elif img['type'] == 'dairy':
+                        i = list(smodels.DairyImg.objects.filter(dairy_id=img['id']).values('url'))
+                        img['imgs'] = i
+                    elif img['type'] == 'test':
+                        i = list(smodels.TestImg.objects.filter(test_id=img['id']).values('url'))
+                        img['imgs'] = i
+                    else:
+                        return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
                 return JsonResponse(res,safe=False)
             else:
                 return JsonResponse({"status_code":"40005","status_text":"数据格式不合法"})
@@ -269,6 +293,9 @@ def searchDynamic(request):
                 a = (page - 1) * 10
                 b = page * 10
                 res = list(smodels.Dynamic.objects.filter(Q(tags__contains=key) | Q(content__contains=key)).values()[a:b])
+                for img in res:
+                    i = list(smodels.DynamicImg.objects.filter(dynamic_id=img['id']).values('url'))
+                    img['imgs'] = i
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -290,6 +317,9 @@ def searchJournal(request):
                 a = (page - 1) * 10
                 b = page * 10
                 res = list(smodels.Dairy.objects.filter(Q(tags__contains=key) | Q(content__contains=key) | Q(title__contains=key)).values()[a:b])
+                for img in res:
+                    i = list(smodels.DairyImg.objects.filter(dairy_id=img['id']).values('url'))
+                    img['imgs'] = i
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -317,6 +347,9 @@ def searchTest(request):
                         t['subtitle'] = ts
                 # 合并上面三个列表并按时间排序取前十个
                 res = list(reversed(sorted(test, key=operator.itemgetter('date'))))[:10]
+                for img in res:
+                    i = list(smodels.TestImg.objects.filter(test_id=img['id']).values('url'))
+                    img['imgs'] = i
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -340,9 +373,20 @@ def hotSearch(request):
                 dynamic = list(smodels.Dynamic.objects.filter().order_by('click').values()[a:b])
                 test = list(smodels.Test.objects.filter().order_by('click').values()[a:b])
                 res = list(reversed(sorted(list(itertools.chain(dairy, dynamic, test)), key=operator.itemgetter('click'))))[:10]
-                for u in res:
-                    userInfo = model_to_dict(umodels.UserInfo.objects.get(user_id=u['user_id']))
-                    u['userInfo'] = userInfo
+                for img in res:
+                    if img['type'] == 'dynamic':
+                        i = list(smodels.DynamicImg.objects.filter(dynamic_id=img['id']).values('url'))
+                        img['imgs'] = i
+                    elif img['type'] == 'dairy':
+                        i = list(smodels.DairyImg.objects.filter(dairy_id=img['id']).values('url'))
+                        img['imgs'] = i
+                    elif img['type'] == 'test':
+                        i = list(smodels.TestImg.objects.filter(test_id=img['id']).values('url'))
+                        img['imgs'] = i
+                    else:
+                        return JsonResponse({"status_code": "40004", "status_text": "系统错误"})
+                    userInfo = model_to_dict(umodels.UserInfo.objects.get(user_id=img['user_id']))
+                    img['userInfo'] = userInfo
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -362,8 +406,10 @@ def hotDairy(request):
             if page > 0:
                 a = (page - 1) * 10
                 b = page * 10
-                res = list(smodels.Dairy.objects.filter().order_by('click').values()[a:b])
+                res= list(smodels.Dairy.objects.filter().order_by('com').values()[a:b])[::-1]
                 for u in res:
+                    i = list(smodels.DairyImg.objects.filter(dairy_id=u['id']).values('url'))
+                    u['imgs'] = i
                     userInfo = model_to_dict(umodels.UserInfo.objects.get(user_id=u['user_id']))
                     u['userInfo'] = userInfo
                 return JsonResponse(res, safe=False)
@@ -388,6 +434,8 @@ def hotTest(request):
                 res = list(smodels.Test.objects.filter().order_by('click').values()[a:b])
                 if res:
                     for t in res:
+                        i = list(smodels.TestImg.objects.filter(test_id=t['id']).values('url'))
+                        t['imgs'] = i
                         ts = list(smodels.TestSubtitle.objects.filter(main_id=t['id']).values())
                         t['subtitle'] = ts
                         userInfo = model_to_dict(umodels.UserInfo.objects.get(user_id=t['user_id']))
@@ -412,6 +460,9 @@ def hotCosmetics(request):
                 a = (page - 1) * 16
                 b = page * 16
                 res = list(models.Commodity.objects.filter().order_by('click').values()[a:b])
+                for t in res:
+                    i = list(models.CommodityImg.objects.filter(commodity_id=t['id']).values('url'))
+                    t['imgs'] = i
                 return JsonResponse(res, safe=False)
             else:
                 return JsonResponse({"status_code": "40005", "status_text": "数据格式不合法"})
@@ -468,6 +519,7 @@ def oneProduct(request):
             category = model_to_dict(models.Category.objects.get(id=res['category_id']))
             res['category'] = category['Category']
             res['adaptability'] = a
+            res['imgs'] = list(models.CommodityImg.objects.filter(commodity_id=id).values('url'))
             return JsonResponse(res, safe=False)
         except Exception as ex:
             print('单个产品错误')

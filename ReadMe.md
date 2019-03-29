@@ -33,7 +33,7 @@
         {"status_code":"10019","status_text":"已赞"},
         {"status_code":"10020","status_text":"未赞"},
         {"status_code":"10021","status_text":"评论成功"},
-        {"status_code":"10022","status_text":"不能关注自己"},
+        ,
         {"status_code":"40000","status_text":"请求方法不合法"},
         {"status_code":"20000","status_text":"请求成功"},
         {"status_code":"10023","status_text":"保存成功"},
@@ -96,6 +96,7 @@
                 心情 {"type":"dynamic","content":*,"tags":*,"date":*,"user_id":*}
                 日记 {"type":"dairy","title":*,"content":*,"tags":*,"date":*,"user_id":*}
                 测评 {"type":"test","title":*,"content":*,"tags":*,"date":*,"user_id":*,"subtitle":[{"title":*,"content":*},{"title":*,"content":*}]}
+                产品 {"type":"commodity":*,"name":*,"price":*,"brand":*,"component":*,"Effect":*,"capacity":*,"security":*,"overdue":*,"date":*,"category_id":*,"skin":[中性肤质,干性肤质,油性肤质,混合性肤质,敏感性肤质]}
 
         search
             # 搜索主页 index
